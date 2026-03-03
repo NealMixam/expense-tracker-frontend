@@ -6,6 +6,13 @@ export const useAuthStore = create((set) => ({
     token: localStorage.getItem('token') || null,
     isAuthenticated: !!localStorage.getItem('token'),
 
+    register: async (username, password) => {
+        const res = await api.post('/auth/register', { username, password });
+        const { token } = res.data;
+        localStorage.setItem('token', token);
+        set({ token, isAuthenticated: true });
+    },
+
     login: async (username, password) => {
         const res = await api.post('/auth/login', { username, password });
         const { token } = res.data;

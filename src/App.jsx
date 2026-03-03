@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { PrimeReactProvider } from 'primereact/api';
 import HomeView from './views/HomeView';
 import LoginView from './views/LoginView';
+import RegisterView from './views/RegisterView';
 import { PrivateRoute } from './components/PrivateRoute';
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
@@ -44,6 +45,7 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<LoginView />} />
+                    <Route path="/register" element={<RegisterView />} />
                     <Route 
                         path="/" 
                         element={
