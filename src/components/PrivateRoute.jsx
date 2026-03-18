@@ -1,7 +1,17 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import MainLayout from './MainLayout'; 
 
-export const PrivateRoute = ({ children }) => {
+export const PrivateRoute = ({ isDark, toggleTheme }) => {
     const isAuth = useAuthStore((state) => state.isAuthenticated);
-    return isAuth ? children : <Navigate to="/login" />;
+
+    if (!isAuth) {
+        return <Navigate to="/login" />;
+    }
+
+    return (
+        <MainLayout isDark={isDark} toggleTheme={toggleTheme}>
+            <Outlet />
+        </MainLayout>
+    );
 };
