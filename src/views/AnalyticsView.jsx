@@ -7,24 +7,24 @@ import { Dropdown } from 'primereact/dropdown';
 import { useExpenseStore } from '../store/expenseStore';
 
 const AnalyticsView = () => {
-  const { expenses } = useExpenseStore();
+  const { expenses, formatAmount } = useExpenseStore();
   const [chartData, setChartData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
   const [topCategories, setTopCategories] = useState([]);
-  
+
   const [selectedPeriod, setSelectedPeriod] = useState('all');
 
   const periods = [
     { label: 'За всё время', value: 'all' },
     { label: 'За месяц', value: 'month' },
-    { label: 'За неделю', value: 'week' }
+    { label: 'За неделю', value: 'week' },
   ];
 
   useEffect(() => {
     if (expenses.length === 0) return;
 
     const now = new Date();
-    const filteredExpenses = expenses.filter(exp => {
+    const filteredExpenses = expenses.filter((exp) => {
       const expDate = new Date(exp.date);
       if (selectedPeriod === 'month') {
         return expDate > new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
@@ -32,7 +32,7 @@ const AnalyticsView = () => {
       if (selectedPeriod === 'week') {
         return expDate > new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       }
-      return true; // 'all'
+      return true; 
     });
 
     if (filteredExpenses.length === 0) {
@@ -42,7 +42,7 @@ const AnalyticsView = () => {
     }
 
     const categoriesMap = {};
-    filteredExpenses.forEach(exp => {
+    filteredExpenses.forEach((exp) => {
       categoriesMap[exp.category] = (categoriesMap[exp.category] || 0) + Number(exp.amount);
     });
 
@@ -52,7 +52,7 @@ const AnalyticsView = () => {
       .map(([name, value]) => ({
         name,
         value,
-        percentage: ((value / totalAmount) * 100).toFixed(1)
+        percentage: ((value / totalAmount) * 100).toFixed(1),
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 3);
@@ -62,29 +62,31 @@ const AnalyticsView = () => {
     const documentStyle = getComputedStyle(document.documentElement);
     const data = {
       labels: Object.keys(categoriesMap),
-      datasets: [{
-        data: Object.values(categoriesMap),
-        backgroundColor: [
-          documentStyle.getPropertyValue('--blue-500'), 
-          documentStyle.getPropertyValue('--yellow-500'), 
-          documentStyle.getPropertyValue('--green-500'),
-          documentStyle.getPropertyValue('--pink-500'),
-          documentStyle.getPropertyValue('--purple-500')
-        ]
-      }]
+      datasets: [
+        {
+          data: Object.values(categoriesMap),
+          backgroundColor: [
+            documentStyle.getPropertyValue('--blue-500'),
+            documentStyle.getPropertyValue('--yellow-500'),
+            documentStyle.getPropertyValue('--green-500'),
+            documentStyle.getPropertyValue('--pink-500'),
+            documentStyle.getPropertyValue('--purple-500'),
+          ],
+        },
+      ],
     };
 
     setChartData(data);
     setChartOptions({
       plugins: {
-        legend: { labels: { color: documentStyle.getPropertyValue('--text-color') } }
+        legend: { labels: { color: documentStyle.getPropertyValue('--text-color') } },
       },
       maintainAspectRatio: false,
-      aspectRatio: 0.8
+      aspectRatio: 0.8,
     });
-  }, [expenses, selectedPeriod]); 
+  }, [expenses, selectedPeriod]);
 
-  const currentTotal = topCategories.reduce((sum, cat) => sum + cat.value, 0); 
+  const currentTotal = topCategories.reduce((sum, cat) => sum + cat.value, 0);
 
   return (
     <motion.div
@@ -94,22 +96,24 @@ const AnalyticsView = () => {
     >
       <div className="flex align-items-center justify-content-between mb-4">
         <h1 className="text-3xl font-bold m-0">Аналитика</h1>
-        <Dropdown 
-          value={selectedPeriod} 
-          options={periods} 
-          onChange={(e) => setSelectedPeriod(e.value)} 
+        <Dropdown
+          value={selectedPeriod}
+          options={periods}
+          onChange={(e) => setSelectedPeriod(e.value)}
           placeholder="Выберите период"
           className="w-full md:w-15rem"
         />
       </div>
-      
+
       <div className="grid">
         <div className="col-12 md:col-4">
           <Card title="Итог за период" className="h-full">
             <p className="m-0 text-3xl font-bold text-primary">
-              {topCategories.length > 0 
-                ? Object.values(chartData.datasets?.[0]?.data || []).reduce((a, b) => a + b, 0).toLocaleString('ru-RU') 
-                : 0} ₽
+              {topCategories.length > 0
+                ? formatAmount(
+                    Object.values(chartData.datasets?.[0]?.data || []).reduce((a, b) => a + b, 0)
+                  )
+                : formatAmount(0)}
             </p>
           </Card>
         </div>
@@ -119,7 +123,12 @@ const AnalyticsView = () => {
             {topCategories.length > 0 ? (
               <>
                 <div className="flex justify-content-center mb-4">
-                  <Chart type="pie" data={chartData} options={chartOptions} style={{ width: '250px' }} />
+                  <Chart
+                    type="pie"
+                    data={chartData}
+                    options={chartOptions}
+                    style={{ width: '250px' }}
+                  />
                 </div>
 
                 <div className="mt-4">
@@ -128,9 +137,13 @@ const AnalyticsView = () => {
                     <div key={cat.name} className="mb-3">
                       <div className="flex justify-content-between mb-1">
                         <span>{cat.name}</span>
-                        <span className="text-600 font-bold">{cat.value.toLocaleString('ru-RU')} ₽</span>
+                        <span className="text-600 font-bold">{formatAmount(cat.value)}</span>
                       </div>
-                      <ProgressBar value={cat.percentage} showValue={false} style={{ height: '6px' }} />
+                      <ProgressBar
+                        value={cat.percentage}
+                        showValue={false}
+                        style={{ height: '6px' }}
+                      />
                     </div>
                   ))}
                 </div>

@@ -1,14 +1,32 @@
-import { create } from "zustand";
-import api from "../api/axios";
+import { create } from 'zustand';
+import api from '../api/axios';
 
 export const useExpenseStore = create((set, get) => ({
   expenses: [],
   loading: false,
 
+  currency: localStorage.getItem('currency') || 'RUB',
+
+  setCurrency: (currency) => {
+    localStorage.setItem('currency', currency);
+    set({ currency });
+  },
+
+  formatAmount: (amount) => {
+    const { currency } = get();
+    const symbols = {
+      RUB: "₽",
+      USD: "$",
+      EUR: "€",
+      GEL: "₾",
+    };
+    return `${Number(amount).toLocaleString("ru-RU")} ${symbols[currency] || ""}`;
+  },
+
   fetchExpenses: async () => {
     set({ loading: true });
     try {
-      const res = await api.get("/expenses");
+      const res = await api.get('/expenses');
       const formattedData = res.data.map((e) => ({
         ...e,
         date: new Date(e.date),
@@ -16,7 +34,7 @@ export const useExpenseStore = create((set, get) => ({
       }));
       set({ expenses: formattedData });
     } catch (err) {
-      console.error("Ошибка при загрузке трат:", err);
+      console.error('Ошибка при загрузке трат:', err);
     } finally {
       set({ loading: false });
     }
@@ -24,7 +42,7 @@ export const useExpenseStore = create((set, get) => ({
 
   addExpense: async (expenseData) => {
     try {
-      const res = await api.post("/expenses", expenseData);
+      const res = await api.post('/expenses', expenseData);
       const newExpense = {
         ...res.data,
         date: new Date(res.data.date),
@@ -34,7 +52,7 @@ export const useExpenseStore = create((set, get) => ({
         expenses: [newExpense, ...state.expenses],
       }));
     } catch (err) {
-      console.error("Ошибка при добавлении:", err);
+      console.error('Ошибка при добавлении:', err);
       throw err;
     }
   },
@@ -51,7 +69,7 @@ export const useExpenseStore = create((set, get) => ({
         expenses: state.expenses.map((e) => (e.id === id ? updatedExpense : e)),
       }));
     } catch (err) {
-      console.error("Ошибка при обновлении:", err);
+      console.error('Ошибка при обновлении:', err);
       throw err;
     }
   },
@@ -63,7 +81,7 @@ export const useExpenseStore = create((set, get) => ({
         expenses: state.expenses.filter((e) => e.id !== id),
       }));
     } catch (err) {
-      console.error("Ошибка при удалении:", err);
+      console.error('Ошибка при удалении:', err);
       throw err;
     }
   },
@@ -73,7 +91,7 @@ export const useExpenseStore = create((set, get) => ({
     const categoriesMap = {};
 
     expenses.forEach((exp) => {
-      const cat = exp.category || "Другое";
+      const cat = exp.category || 'Другое';
       if (!categoriesMap[cat]) categoriesMap[cat] = 0;
       categoriesMap[cat] += Number(exp.amount);
     });
@@ -83,22 +101,8 @@ export const useExpenseStore = create((set, get) => ({
       datasets: [
         {
           data: Object.values(categoriesMap),
-          backgroundColor: [
-            "#4ade80",
-            "#60a5fa",
-            "#fbbf24",
-            "#f87171",
-            "#a78bfa",
-            "#94a3b8",
-          ],
-          hoverBackgroundColor: [
-            "#22c55e",
-            "#3b82f6",
-            "#f59e0b",
-            "#ef4444",
-            "#8b5cf6",
-            "#64748b",
-          ],
+          backgroundColor: ['#4ade80', '#60a5fa', '#fbbf24', '#f87171', '#a78bfa', '#94a3b8'],
+          hoverBackgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'],
         },
       ],
     };

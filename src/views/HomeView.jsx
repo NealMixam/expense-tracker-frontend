@@ -22,6 +22,8 @@ const HomeView = () => {
     updateExpense,
     removeExpense,
     getChartData,
+    formatAmount,
+    currency,
   } = useExpenseStore();
   const toast = useRef(null);
   const [displayDialog, setDisplayDialog] = useState(false);
@@ -97,7 +99,7 @@ const HomeView = () => {
             <div className="text-center">
               <span className="block text-500 font-medium mb-3 text-xl">Общий расход</span>
               <div className="text-primary font-bold text-4xl">
-                {expenses.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()} ₽
+                {formatAmount(expenses.reduce((acc, curr) => acc + curr.amount, 0))}
               </div>
             </div>
           </Card>
@@ -134,12 +136,7 @@ const HomeView = () => {
         >
           <Column field="title" header="Название" sortable />
           <Column field="category" header="Категория" sortable />
-          <Column
-            field="amount"
-            header="Сумма"
-            body={(r) => `${r.amount.toLocaleString()} ₽`}
-            sortable
-          />
+          <Column field="amount" header="Сумма" body={(r) => formatAmount(r.amount)} sortable />
           <Column
             field="date"
             header="Дата"
@@ -173,8 +170,8 @@ const HomeView = () => {
               value={expense.amount}
               onValueChange={(e) => setExpense({ ...expense, amount: e.value })}
               mode="currency"
-              currency="RUB"
-              locale="ru-RU"
+              currency={currency}
+              locale={currency === 'RUB' ? 'ru-RU' : 'en-US'}
             />
             <label htmlFor="amount">Сумма</label>
           </span>

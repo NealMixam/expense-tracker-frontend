@@ -8,11 +8,24 @@ import SettingsView from './views/SettingsView';
 import RegisterView from './views/RegisterView';
 import { PrivateRoute } from './components/PrivateRoute';
 
+import { useAuthStore } from './store/authStore';
+import { useExpenseStore } from './store/expenseStore';
+
 function App() {
   const [isDark, setIsDark] = useState(
     localStorage.getItem('theme') === 'dark' ||
       (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
   );
+
+  useEffect(() => {
+    const { isAuthenticated, getMe } = useAuthStore.getState();
+    const { fetchExpenses } = useExpenseStore.getState();
+
+    if (isAuthenticated) {
+      getMe();
+      fetchExpenses();
+    }
+  }, []);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -47,7 +60,10 @@ function App() {
           <Route element={<PrivateRoute isDark={isDark} toggleTheme={toggleTheme} />}>
             <Route path="/" element={<HomeView />} />
             <Route path="/analytics" element={<AnalyticsView />} />
-            <Route path="/settings" element={<SettingsView />} />
+            <Route
+              path="/settings"
+              element={<SettingsView isDark={isDark} toggleTheme={toggleTheme} />}
+            />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />
