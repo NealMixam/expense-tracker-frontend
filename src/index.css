@@ -18,6 +18,10 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+.p-icon-field {
+    width: 100% !important;
+}
+
 .flex { display: flex; }
 .flex-column { flex-direction: column; }
 .justify-content-between { justify-content: space-between; }
