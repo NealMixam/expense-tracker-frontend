@@ -1,31 +1,41 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from 'primereact/card';
-import { SelectButton } from 'primereact/selectbutton';
+import { SelectButton, SelectButtonChangeEvent } from 'primereact/selectbutton';
 import { Button } from 'primereact/button';
-import { InputSwitch } from 'primereact/inputswitch';
-import { Divider } from 'primereact/divider';
+import { InputSwitch, InputSwitchChangeEvent } from 'primereact/inputswitch';
 import { Avatar } from 'primereact/avatar';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Toast } from 'primereact/toast';
 import { useAuthStore } from '../store/authStore';
-import { useExpenseStore } from '../store/expenseStore';
+import { useExpenseStore, CurrencyCode } from '../store/expenseStore';
 
-const SettingsView = ({ isDark, toggleTheme }) => {
-  const { user, logout, updateProfile } = useAuthStore();
+interface SettingsViewProps {
+  isDark: boolean;
+  toggleTheme: (e: InputSwitchChangeEvent) => void;
+}
+
+interface ProfileFormData {
+  username: string;
+  email: string;
+  newPassword?: string;
+}
+
+const SettingsView: React.FC<SettingsViewProps> = ({ isDark, toggleTheme }) => {
+  const { user, updateProfile } = useAuthStore();
   const { currency, setCurrency } = useExpenseStore();
-  const toast = useRef(null);
+  const toast = useRef<Toast>(null);
 
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [formData, setFormData] = useState({
+  const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
+  const [formData, setFormData] = useState<ProfileFormData>({
     username: user?.username || '',
     email: user?.email || '',
     newPassword: '',
   });
 
-  const currencyOptions = [
+  const currencyOptions: { label: string; value: CurrencyCode }[] = [
     { label: 'RUB (₽)', value: 'RUB' },
     { label: 'USD ($)', value: 'USD' },
     { label: 'EUR (€)', value: 'EUR' },
@@ -35,7 +45,7 @@ const SettingsView = ({ isDark, toggleTheme }) => {
   const handleSaveProfile = async () => {
     try {
       await updateProfile(formData);
-      toast.current.show({
+      toast.current?.show({
         severity: 'success',
         summary: 'Успех',
         detail: 'Профиль обновлен',
@@ -44,7 +54,7 @@ const SettingsView = ({ isDark, toggleTheme }) => {
       setShowEditDialog(false);
       setFormData((prev) => ({ ...prev, newPassword: '' }));
     } catch (err) {
-      toast.current.show({
+      toast.current?.show({
         severity: 'error',
         summary: 'Ошибка',
         detail: 'Не удалось сохранить данные',
@@ -74,7 +84,7 @@ const SettingsView = ({ isDark, toggleTheme }) => {
                 <SelectButton
                   value={currency}
                   options={currencyOptions}
-                  onChange={(e) => e.value && setCurrency(e.value)}
+                  onChange={(e: SelectButtonChangeEvent) => e.value && setCurrency(e.value as CurrencyCode)}
                 />
               </div>
             </div>
@@ -141,7 +151,9 @@ const SettingsView = ({ isDark, toggleTheme }) => {
               id="username"
               className="w-full"
               value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setFormData({ ...formData, username: e.target.value })
+              }
             />
             <label htmlFor="username">Имя пользователя</label>
           </span>
@@ -150,7 +162,9 @@ const SettingsView = ({ isDark, toggleTheme }) => {
               id="email"
               className="w-full"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setFormData({ ...formData, email: e.target.value })
+              }
             />
             <label htmlFor="email">Email</label>
           </span>
@@ -158,7 +172,9 @@ const SettingsView = ({ isDark, toggleTheme }) => {
             <Password
               id="password"
               value={formData.newPassword}
-              onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setFormData({ ...formData, newPassword: e.target.value })
+              }
               toggleMask
               className="w-full"
               inputClassName="w-full"
