@@ -6,6 +6,7 @@ import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import axios, { AxiosError } from 'axios';
 
 const RegisterView: React.FC = () => {
   const [username, setUsername] = useState<string>('');
@@ -29,8 +30,13 @@ const RegisterView: React.FC = () => {
     try {
       await register(username, password, email);
       navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Ошибка при регистрации');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const axiosError = err as AxiosError<{ message?: string }>;
+        setError(axiosError.response?.data?.message || 'Ошибка при регистрации');
+      } else {
+        setError('Произошла непредвиденная ошибка');
+      }
     } finally {
       setLoading(false);
     }
@@ -83,7 +89,7 @@ const RegisterView: React.FC = () => {
               value={confirmPassword}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
               toggleMask
-              feedback={false} 
+              feedback={false}
               className="w-full"
               inputClassName="w-full"
               required

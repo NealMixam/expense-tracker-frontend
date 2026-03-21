@@ -6,7 +6,7 @@ export interface Expense {
   amount: number;
   category: string;
   title?: string;
-  date: Date; 
+  date: Date;
   userId: number;
 }
 
@@ -19,7 +19,9 @@ interface ExpenseState {
   setCurrency: (currency: CurrencyCode) => void;
   formatAmount: (amount: number | string) => string;
   fetchExpenses: () => Promise<void>;
-  addExpense: (expenseData: Omit<Expense, 'id' | 'userId' | 'date'> & { date?: string | Date }) => Promise<void>;
+  addExpense: (
+    expenseData: Omit<Expense, 'id' | 'userId' | 'date'> & { date?: string | Date }
+  ) => Promise<void>;
   updateExpense: (id: number, expenseData: Partial<Expense>) => Promise<void>;
   removeExpense: (id: number) => Promise<void>;
   getChartData: () => {
@@ -45,23 +47,25 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
   formatAmount: (amount) => {
     const { currency } = get();
     const symbols: Record<CurrencyCode, string> = {
-      RUB: "₽",
-      USD: "$",
-      EUR: "€",
-      GEL: "₾",
+      RUB: '₽',
+      USD: '$',
+      EUR: '€',
+      GEL: '₾',
     };
-    return `${Number(amount).toLocaleString("ru-RU")} ${symbols[currency] || ""}`;
+    return `${Number(amount).toLocaleString('ru-RU')} ${symbols[currency] || ''}`;
   },
 
   fetchExpenses: async () => {
     set({ loading: true });
     try {
       const res = await api.get('/expenses');
-      const formattedData: Expense[] = res.data.map((e: any) => ({
-        ...e,
-        date: new Date(e.date),
-        amount: Number(e.amount),
-      }));
+      const formattedData: Expense[] = res.data.map(
+        (e: Omit<Expense, 'date'> & { date: string }) => ({
+          ...e,
+          date: new Date(e.date),
+          amount: Number(e.amount),
+        })
+      );
       set({ expenses: formattedData });
     } catch (err) {
       console.error('Ошибка при загрузке трат:', err);

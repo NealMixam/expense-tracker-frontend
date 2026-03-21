@@ -53,7 +53,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ isDark, toggleTheme }) => {
       });
       setShowEditDialog(false);
       setFormData((prev) => ({ ...prev, newPassword: '' }));
-    } catch (err) {
+    } catch {
       toast.current?.show({
         severity: 'error',
         summary: 'Ошибка',

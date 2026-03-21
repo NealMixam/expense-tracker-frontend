@@ -24,7 +24,7 @@ const LoginView: React.FC = () => {
     try {
       await login(username, password);
       navigate('/');
-    } catch (err) {
+    } catch {
       setError('Неверное имя пользователя или пароль');
     } finally {
       setLoading(false);

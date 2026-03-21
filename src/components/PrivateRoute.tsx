@@ -5,7 +5,7 @@ import MainLayout from './MainLayout';
 
 interface PrivateRouteProps {
   isDark: boolean;
-  toggleTheme: (e?: any) => void;
+  toggleTheme: (e?: React.MouseEvent<HTMLElement>) => void;
 }
 
 export const PrivateRoute: React.FC<PrivateRouteProps> = ({ isDark, toggleTheme }) => {

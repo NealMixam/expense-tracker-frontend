@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from 'primereact/card';
 import { Chart } from 'primereact/chart';
 import { ProgressBar } from 'primereact/progressbar';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { useExpenseStore, Expense } from '../store/expenseStore';
+import { ChartOptions } from 'chart.js';
 
 interface CategorySummary {
   name: string;
@@ -22,9 +23,6 @@ interface ChartData {
 
 const AnalyticsView: React.FC = () => {
   const { expenses, formatAmount } = useExpenseStore();
-  const [chartData, setChartData] = useState<ChartData | {}>({});
-  const [chartOptions, setChartOptions] = useState<any>({});
-  const [topCategories, setTopCategories] = useState<CategorySummary[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('all');
 
   const periods = [
@@ -33,11 +31,10 @@ const AnalyticsView: React.FC = () => {
     { label: 'За неделю', value: 'week' },
   ];
 
-  useEffect(() => {
-    if (expenses.length === 0) return;
-
+  const filteredExpenses = useMemo(() => {
+    if (expenses.length === 0) return [];
     const now = new Date();
-    const filteredExpenses = expenses.filter((exp: Expense) => {
+    return expenses.filter((exp: Expense) => {
       const expDate = new Date(exp.date);
       if (selectedPeriod === 'month') {
         return expDate > new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
@@ -45,13 +42,13 @@ const AnalyticsView: React.FC = () => {
       if (selectedPeriod === 'week') {
         return expDate > new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       }
-      return true; 
+      return true;
     });
+  }, [expenses, selectedPeriod]);
 
+  const analyticsData = useMemo(() => {
     if (filteredExpenses.length === 0) {
-      setChartData({});
-      setTopCategories([]);
-      return;
+      return { chartData: null, topCategories: [], total: 0 };
     }
 
     const categoriesMap: Record<string, number> = {};
@@ -70,10 +67,8 @@ const AnalyticsView: React.FC = () => {
       .sort((a, b) => b.value - a.value)
       .slice(0, 3);
 
-    setTopCategories(sortedCategories);
-
     const documentStyle = getComputedStyle(document.documentElement);
-    const data: ChartData = {
+    const chartData: ChartData = {
       labels: Object.keys(categoriesMap),
       datasets: [
         {
@@ -89,22 +84,21 @@ const AnalyticsView: React.FC = () => {
       ],
     };
 
-    setChartData(data);
-    setChartOptions({
+    return { chartData, topCategories: sortedCategories, total: totalAmount };
+  }, [filteredExpenses]);
+
+  const chartOptions = useMemo<ChartOptions<'pie'>>(() => {
+    const documentStyle = getComputedStyle(document.documentElement);
+    return {
       plugins: {
         legend: { labels: { color: documentStyle.getPropertyValue('--text-color') } },
       },
       maintainAspectRatio: false,
       aspectRatio: 0.8,
-    });
-  }, [expenses, selectedPeriod]);
+    };
+  }, []);
 
-  const getTotalFromChart = (): number => {
-    if ('datasets' in chartData) {
-      return chartData.datasets[0].data.reduce((a, b) => a + b, 0);
-    }
-    return 0;
-  };
+  const { chartData, topCategories, total } = analyticsData;
 
   return (
     <motion.div
@@ -127,16 +121,14 @@ const AnalyticsView: React.FC = () => {
         <div className="col-12 md:col-4">
           <Card title="Итог за период" className="h-full">
             <p className="m-0 text-3xl font-bold text-primary">
-              {topCategories.length > 0
-                ? formatAmount(getTotalFromChart())
-                : formatAmount(0)}
+              {formatAmount(total)}
             </p>
           </Card>
         </div>
 
         <div className="col-12 md:col-8">
           <Card title="Детализация">
-            {topCategories.length > 0 ? (
+            {topCategories.length > 0 && chartData ? (
               <>
                 <div className="flex justify-content-center mb-4">
                   <Chart
