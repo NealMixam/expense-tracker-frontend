@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { PrimeReactProvider } from 'primereact/api';
+import { InputSwitchChangeEvent } from 'primereact/inputswitch';
+
 import HomeView from './views/HomeView';
 import LoginView from './views/LoginView';
 import AnalyticsView from './views/AnalyticsView';
@@ -11,11 +13,12 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { useAuthStore } from './store/authStore';
 import { useExpenseStore } from './store/expenseStore';
 
-function App() {
-  const [isDark, setIsDark] = useState(
-    localStorage.getItem('theme') === 'dark' ||
-      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  );
+const App: React.FC = () => {
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
   useEffect(() => {
     const { isAuthenticated, getMe } = useAuthStore.getState();
@@ -29,7 +32,7 @@ function App() {
 
   useEffect(() => {
     const html = document.documentElement;
-    let themeLink = document.getElementById('theme-link');
+    let themeLink = document.getElementById('theme-link') as HTMLLinkElement | null;
 
     if (!themeLink) {
       themeLink = document.createElement('link');
@@ -49,7 +52,10 @@ function App() {
     }
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark(!isDark);
+  const toggleTheme = (e?: InputSwitchChangeEvent) => {
+    const newValue = e ? e.value : !isDark;
+    setIsDark(newValue);
+  };
 
   return (
     <PrimeReactProvider value={{ ripple: true }}>
@@ -57,6 +63,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginView />} />
           <Route path="/register" element={<RegisterView />} />
+          
           <Route element={<PrivateRoute isDark={isDark} toggleTheme={toggleTheme} />}>
             <Route path="/" element={<HomeView />} />
             <Route path="/analytics" element={<AnalyticsView />} />

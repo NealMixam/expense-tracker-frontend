@@ -3,16 +3,29 @@ import { motion } from 'framer-motion';
 import { Card } from 'primereact/card';
 import { Chart } from 'primereact/chart';
 import { ProgressBar } from 'primereact/progressbar';
-import { Dropdown } from 'primereact/dropdown';
-import { useExpenseStore } from '../store/expenseStore';
+import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { useExpenseStore, Expense } from '../store/expenseStore';
 
-const AnalyticsView = () => {
+interface CategorySummary {
+  name: string;
+  value: number;
+  percentage: string;
+}
+
+interface ChartData {
+  labels: string[];
+  datasets: {
+    data: number[];
+    backgroundColor: string[];
+  }[];
+}
+
+const AnalyticsView: React.FC = () => {
   const { expenses, formatAmount } = useExpenseStore();
-  const [chartData, setChartData] = useState({});
-  const [chartOptions, setChartOptions] = useState({});
-  const [topCategories, setTopCategories] = useState([]);
-
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
+  const [chartData, setChartData] = useState<ChartData | {}>({});
+  const [chartOptions, setChartOptions] = useState<any>({});
+  const [topCategories, setTopCategories] = useState<CategorySummary[]>([]);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('all');
 
   const periods = [
     { label: 'За всё время', value: 'all' },
@@ -24,7 +37,7 @@ const AnalyticsView = () => {
     if (expenses.length === 0) return;
 
     const now = new Date();
-    const filteredExpenses = expenses.filter((exp) => {
+    const filteredExpenses = expenses.filter((exp: Expense) => {
       const expDate = new Date(exp.date);
       if (selectedPeriod === 'month') {
         return expDate > new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
@@ -41,14 +54,14 @@ const AnalyticsView = () => {
       return;
     }
 
-    const categoriesMap = {};
-    filteredExpenses.forEach((exp) => {
+    const categoriesMap: Record<string, number> = {};
+    filteredExpenses.forEach((exp: Expense) => {
       categoriesMap[exp.category] = (categoriesMap[exp.category] || 0) + Number(exp.amount);
     });
 
     const totalAmount = filteredExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
 
-    const sortedCategories = Object.entries(categoriesMap)
+    const sortedCategories: CategorySummary[] = Object.entries(categoriesMap)
       .map(([name, value]) => ({
         name,
         value,
@@ -60,7 +73,7 @@ const AnalyticsView = () => {
     setTopCategories(sortedCategories);
 
     const documentStyle = getComputedStyle(document.documentElement);
-    const data = {
+    const data: ChartData = {
       labels: Object.keys(categoriesMap),
       datasets: [
         {
@@ -86,7 +99,12 @@ const AnalyticsView = () => {
     });
   }, [expenses, selectedPeriod]);
 
-  const currentTotal = topCategories.reduce((sum, cat) => sum + cat.value, 0);
+  const getTotalFromChart = (): number => {
+    if ('datasets' in chartData) {
+      return chartData.datasets[0].data.reduce((a, b) => a + b, 0);
+    }
+    return 0;
+  };
 
   return (
     <motion.div
@@ -99,7 +117,7 @@ const AnalyticsView = () => {
         <Dropdown
           value={selectedPeriod}
           options={periods}
-          onChange={(e) => setSelectedPeriod(e.value)}
+          onChange={(e: DropdownChangeEvent) => setSelectedPeriod(e.value)}
           placeholder="Выберите период"
           className="w-full md:w-15rem"
         />
@@ -110,9 +128,7 @@ const AnalyticsView = () => {
           <Card title="Итог за период" className="h-full">
             <p className="m-0 text-3xl font-bold text-primary">
               {topCategories.length > 0
-                ? formatAmount(
-                    Object.values(chartData.datasets?.[0]?.data || []).reduce((a, b) => a + b, 0)
-                  )
+                ? formatAmount(getTotalFromChart())
                 : formatAmount(0)}
             </p>
           </Card>
@@ -133,7 +149,7 @@ const AnalyticsView = () => {
 
                 <div className="mt-4">
                   <h4 className="mb-3">Топ-3 категорий</h4>
-                  {topCategories.map((cat, index) => (
+                  {topCategories.map((cat) => (
                     <div key={cat.name} className="mb-3">
                       <div className="flex justify-content-between mb-1">
                         <span>{cat.name}</span>

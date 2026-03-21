@@ -1,11 +1,41 @@
 import { create } from 'zustand';
 import api from '../api/axios';
 
-export const useExpenseStore = create((set, get) => ({
+export interface Expense {
+  id: number;
+  amount: number;
+  category: string;
+  title?: string;
+  date: Date; 
+  userId: number;
+}
+
+export type CurrencyCode = 'RUB' | 'USD' | 'EUR' | 'GEL';
+
+interface ExpenseState {
+  expenses: Expense[];
+  loading: boolean;
+  currency: CurrencyCode;
+  setCurrency: (currency: CurrencyCode) => void;
+  formatAmount: (amount: number | string) => string;
+  fetchExpenses: () => Promise<void>;
+  addExpense: (expenseData: Omit<Expense, 'id' | 'userId' | 'date'> & { date?: string | Date }) => Promise<void>;
+  updateExpense: (id: number, expenseData: Partial<Expense>) => Promise<void>;
+  removeExpense: (id: number) => Promise<void>;
+  getChartData: () => {
+    labels: string[];
+    datasets: {
+      data: number[];
+      backgroundColor: string[];
+      hoverBackgroundColor: string[];
+    }[];
+  };
+}
+
+export const useExpenseStore = create<ExpenseState>((set, get) => ({
   expenses: [],
   loading: false,
-
-  currency: localStorage.getItem('currency') || 'RUB',
+  currency: (localStorage.getItem('currency') as CurrencyCode) || 'RUB',
 
   setCurrency: (currency) => {
     localStorage.setItem('currency', currency);
@@ -14,7 +44,7 @@ export const useExpenseStore = create((set, get) => ({
 
   formatAmount: (amount) => {
     const { currency } = get();
-    const symbols = {
+    const symbols: Record<CurrencyCode, string> = {
       RUB: "₽",
       USD: "$",
       EUR: "€",
@@ -27,7 +57,7 @@ export const useExpenseStore = create((set, get) => ({
     set({ loading: true });
     try {
       const res = await api.get('/expenses');
-      const formattedData = res.data.map((e) => ({
+      const formattedData: Expense[] = res.data.map((e: any) => ({
         ...e,
         date: new Date(e.date),
         amount: Number(e.amount),
@@ -43,7 +73,7 @@ export const useExpenseStore = create((set, get) => ({
   addExpense: async (expenseData) => {
     try {
       const res = await api.post('/expenses', expenseData);
-      const newExpense = {
+      const newExpense: Expense = {
         ...res.data,
         date: new Date(res.data.date),
         amount: Number(res.data.amount),
@@ -60,7 +90,7 @@ export const useExpenseStore = create((set, get) => ({
   updateExpense: async (id, expenseData) => {
     try {
       const res = await api.put(`/expenses/${id}`, expenseData);
-      const updatedExpense = {
+      const updatedExpense: Expense = {
         ...res.data,
         date: new Date(res.data.date),
         amount: Number(res.data.amount),
@@ -88,7 +118,7 @@ export const useExpenseStore = create((set, get) => ({
 
   getChartData: () => {
     const { expenses } = get();
-    const categoriesMap = {};
+    const categoriesMap: Record<string, number> = {};
 
     expenses.forEach((exp) => {
       const cat = exp.category || 'Другое';

@@ -4,16 +4,18 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
-import { Dropdown } from 'primereact/dropdown';
+import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
+import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Chart } from 'primereact/chart';
 import { Card } from 'primereact/card';
-import { useExpenseStore } from '../store/expenseStore';
+import { useExpenseStore, Expense } from '../store/expenseStore';
 import { motion } from 'framer-motion';
 
-const HomeView = () => {
+type ExpenseFormData = Omit<Expense, 'id' | 'userId'> & { id?: number };
+
+const HomeView: React.FC = () => {
   const {
     expenses,
     loading,
@@ -25,47 +27,58 @@ const HomeView = () => {
     formatAmount,
     currency,
   } = useExpenseStore();
-  const toast = useRef(null);
-  const [displayDialog, setDisplayDialog] = useState(false);
-  const [expense, setExpense] = useState({
+
+  const toast = useRef<Toast>(null);
+  
+  const [displayDialog, setDisplayDialog] = useState<boolean>(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  
+  const initialExpenseState: ExpenseFormData = {
     title: '',
     amount: 0,
     category: 'Другое',
     date: new Date(),
-  });
-  const [isEdit, setIsEdit] = useState(false);
+  };
 
-  const categories = ['Продукты', 'Транспорт', 'Развлечения', 'Жилье', 'Здоровье', 'Другое'];
+  const [expense, setExpense] = useState<ExpenseFormData>(initialExpenseState);
+
+  const categories: string[] = ['Продукты', 'Транспорт', 'Развлечения', 'Жилье', 'Здоровье', 'Другое'];
 
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
 
   const openNew = () => {
-    setExpense({ title: '', amount: 0, category: 'Другое', date: new Date() });
+    setExpense(initialExpenseState);
     setIsEdit(false);
     setDisplayDialog(true);
   };
 
   const handleSave = async () => {
     if (!expense.title || !expense.amount) return;
+    
     try {
-      isEdit ? await updateExpense(expense.id, expense) : await addExpense(expense);
-      toast.current.show({ severity: 'success', summary: 'Успех', detail: 'Данные сохранены' });
+      if (isEdit && expense.id) {
+        await updateExpense(expense.id, expense as Expense);
+      } else {
+        await addExpense(expense as Expense);
+      }
+      
+      toast.current?.show({ severity: 'success', summary: 'Успех', detail: 'Данные сохранены' });
       setDisplayDialog(false);
     } catch {
-      toast.current.show({ severity: 'error', summary: 'Ошибка', detail: 'Ошибка сохранения' });
+      toast.current?.show({ severity: 'error', summary: 'Ошибка', detail: 'Ошибка сохранения' });
     }
   };
 
-  const actionTemplate = (rowData) => (
+  const actionTemplate = (rowData: Expense) => (
     <div className="flex gap-2">
       <Button
         icon="pi pi-pencil"
         rounded
         text
         onClick={() => {
-          setExpense(rowData);
+          setExpense({ ...rowData });
           setIsEdit(true);
           setDisplayDialog(true);
         }}
@@ -136,11 +149,16 @@ const HomeView = () => {
         >
           <Column field="title" header="Название" sortable />
           <Column field="category" header="Категория" sortable />
-          <Column field="amount" header="Сумма" body={(r) => formatAmount(r.amount)} sortable />
+          <Column 
+            field="amount" 
+            header="Сумма" 
+            body={(r: Expense) => formatAmount(r.amount)} 
+            sortable 
+          />
           <Column
             field="date"
             header="Дата"
-            body={(r) => new Date(r.date).toLocaleDateString()}
+            body={(r: Expense) => new Date(r.date).toLocaleDateString()}
             sortable
           />
           <Column body={actionTemplate} header="Действия" />
@@ -159,7 +177,9 @@ const HomeView = () => {
               id="title"
               className="w-full"
               value={expense.title}
-              onChange={(e) => setExpense({ ...expense, title: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setExpense({ ...expense, title: e.target.value })
+              }
             />
             <label htmlFor="title">Название</label>
           </span>
@@ -168,7 +188,9 @@ const HomeView = () => {
               id="amount"
               className="w-full"
               value={expense.amount}
-              onValueChange={(e) => setExpense({ ...expense, amount: e.value })}
+              onValueChange={(e: InputNumberValueChangeEvent) => 
+                setExpense({ ...expense, amount: e.value || 0 })
+              }
               mode="currency"
               currency={currency}
               locale={currency === 'RUB' ? 'ru-RU' : 'en-US'}
@@ -178,7 +200,9 @@ const HomeView = () => {
           <Dropdown
             value={expense.category}
             options={categories}
-            onChange={(e) => setExpense({ ...expense, category: e.value })}
+            onChange={(e: DropdownChangeEvent) => 
+              setExpense({ ...expense, category: e.value })
+            }
             placeholder="Выберите категорию"
             className="w-full"
           />
