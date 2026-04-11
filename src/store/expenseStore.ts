@@ -10,6 +10,8 @@ export interface Expense {
   userId: number;
 }
 
+export type ExpenseFormData = Omit<Expense, 'id' | 'userId'> & { id?: number };
+
 export type CurrencyCode = 'RUB' | 'USD' | 'EUR' | 'GEL';
 
 interface ExpenseState {

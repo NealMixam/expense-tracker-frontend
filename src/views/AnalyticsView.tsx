@@ -106,7 +106,7 @@ const AnalyticsView: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="flex align-items-center justify-content-between mb-4">
+      <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
         <h1 className="text-3xl font-bold m-0">Аналитика</h1>
         <Dropdown
           value={selectedPeriod}
