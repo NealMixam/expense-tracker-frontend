@@ -53,8 +53,11 @@ const App: React.FC = () => {
   }, [isDark]);
 
   const toggleTheme = (e?: InputSwitchChangeEvent) => {
-    const newValue = e ? e.value : !isDark;
-    setIsDark(newValue);
+    if (e !== undefined) {
+      setIsDark(e.value ?? false);
+    } else {
+      setIsDark((prev) => !prev);
+    }
   };
 
   return (
@@ -63,7 +66,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/login" element={<LoginView />} />
           <Route path="/register" element={<RegisterView />} />
-          
+
           <Route element={<PrivateRoute isDark={isDark} toggleTheme={toggleTheme} />}>
             <Route path="/" element={<HomeView />} />
             <Route path="/analytics" element={<AnalyticsView />} />

@@ -32,10 +32,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, isDark, toggleTheme }
 
   return (
     <div className="min-h-screen flex flex-column bg-surface-ground">
-      <div className="surface-card py-3 px-5 flex align-items-center justify-content-between shadow-2 z-5">
+      <div className="surface-card py-3 px-3 md:px-5 flex align-items-center justify-content-between shadow-2 z-5">
         <div className="flex align-items-center">
           <Button icon="pi pi-bars" onClick={() => setVisible(true)} text className="mr-3" />
-          <span className="text-xl font-bold text-primary">SmartExpense</span>
+          <span className="text-xl font-bold text-primary logo-font">Money Tracker</span>
         </div>
 
         <div className="flex align-items-center gap-3">
@@ -44,28 +44,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, isDark, toggleTheme }
             rounded
             text
             severity="secondary"
-            onClick={toggleTheme}
+            onClick={() => toggleTheme()} 
           />
           <Avatar icon="pi pi-user" shape="circle" className="bg-primary text-white" />
-          <Button 
-            icon="pi pi-sign-out" 
-            text 
-            severity="danger" 
-            onClick={logout} 
-            className="p-0" 
+          <Button
+            icon="pi pi-sign-out"
+            text
+            severity="danger"
+            onClick={logout}
+            className="p-0"
           />
         </div>
       </div>
 
-      <Sidebar 
-        visible={visible} 
-        onHide={() => setVisible(false)} 
+      <Sidebar
+        visible={visible}
+        onHide={() => setVisible(false)}
         className="w-full md:w-20rem"
       >
         <div className="flex flex-column h-full">
           <div className="flex align-items-center justify-content-between px-3 py-4 mb-3 border-bottom-1 surface-border">
-            <span className="text-2xl font-bold">Меню</span>
+            <span className="text-2xl font-bold surface-800">Меню</span>
           </div>
+
           <div className="overflow-y-auto">
             <ul className="list-none p-3 m-0">
               {menuItems.map((item: MenuItem) => {
@@ -76,35 +77,36 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, isDark, toggleTheme }
                     <Link
                       to={item.to}
                       onClick={() => setVisible(false)}
+                      style={{
+                        backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                        textDecoration: 'none'
+                      }}
                       className={classNames(
-                        'p-ripple flex align-items-center cursor-pointer p-3 border-round transition-duration-150 transition-colors w-full no-underline',
+                        'p-ripple flex align-items-center cursor-pointer p-3 border-round transition-duration-150 w-full',
                         {
-                          'bg-primary-50': isActive && !isDark,
-                          'bg-primary-900': isActive && isDark,
-                          'hover:surface-100': !isActive,
+                          'hover:surface-hover': !isActive,
                         }
                       )}
                     >
                       <i
-                        className={classNames(`${item.icon} mr-3 text-lg`, {
-                          'text-primary font-bold': isActive,
-                          'text-600': !isActive,
-                        })}
+                        className={`${item.icon} mr-3 text-lg`}
+                        style={{
+                          color: isActive ? 'var(--primary-color)' : 'var(--text-color-secondary)',
+                          transition: 'color 0.15s ease-in-out'
+                        }}
                       ></i>
 
                       <span
-                        className={classNames('font-medium', {
-                          'text-primary font-bold': isActive,
-                          'text-700': !isActive,
-                        })}
+                        className="font-medium"
+                        style={{ color: isActive ? 'var(--primary-color)' : 'var(--text-color-secondary)' }}
                       >
                         {item.label}
                       </span>
 
                       {isActive && (
                         <div
-                          className="ml-auto border-circle bg-primary"
-                          style={{ width: '6px', height: '6px' }}
+                          className="ml-auto border-round"
+                          style={{ width: '4px', height: '16px', backgroundColor: 'var(--primary-color)' }}
                         ></div>
                       )}
 
@@ -115,8 +117,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, isDark, toggleTheme }
               })}
             </ul>
           </div>
-          <div className="mt-auto p-3 border-top-1 surface-border text-center">
-            <p className="text-sm text-500">Expense Tracker v1.0</p>
+
+          <div className="mt-auto p-3 border-top-1 surface-border text-center surface-500">
+            <p className="text-sm">Expense Tracker v1.0</p>
           </div>
         </div>
       </Sidebar>

@@ -85,6 +85,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ isDark, toggleTheme }) => {
                   value={currency}
                   options={currencyOptions}
                   onChange={(e: SelectButtonChangeEvent) => e.value && setCurrency(e.value as CurrencyCode)}
+                  className="w-full md:w-auto"
                 />
               </div>
             </div>
@@ -131,56 +132,64 @@ const SettingsView: React.FC<SettingsViewProps> = ({ isDark, toggleTheme }) => {
       <Dialog
         header="Редактирование профиля"
         visible={showEditDialog}
-        style={{ width: '90vw', maxWidth: '400px' }}
+        style={{ width: '90vw', maxWidth: '450px' }}
         onHide={() => setShowEditDialog(false)}
-        footer={
-          <div className="pt-3">
-            <Button
-              label="Отмена"
-              icon="pi pi-times"
-              onClick={() => setShowEditDialog(false)}
-              className="p-button-text"
-            />
-            <Button label="Сохранить" icon="pi pi-check" onClick={handleSaveProfile} autoFocus />
-          </div>
-        }
+        blockScroll
       >
-        <div className="flex flex-column gap-4 pt-3">
+        <div className="flex flex-column gap-5 pt-5">
           <span className="p-float-label">
             <InputText
               id="username"
               className="w-full"
               value={formData.username}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setFormData({ ...formData, username: e.target.value })
               }
             />
             <label htmlFor="username">Имя пользователя</label>
           </span>
+
           <span className="p-float-label">
             <InputText
               id="email"
               className="w-full"
               value={formData.email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setFormData({ ...formData, email: e.target.value })
               }
             />
             <label htmlFor="email">Email</label>
           </span>
+
           <span className="p-float-label">
             <Password
               id="password"
               value={formData.newPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setFormData({ ...formData, newPassword: e.target.value })
               }
               toggleMask
               className="w-full"
               inputClassName="w-full"
+              feedback={false}
             />
             <label htmlFor="password">Новый пароль (если нужно)</label>
           </span>
+
+          <div className="flex flex-column gap-2 mt-2">
+            <Button
+              label="Сохранить"
+              icon="pi pi-check"
+              onClick={handleSaveProfile}
+              className="w-full"
+            />
+            <Button
+              label="Отмена"
+              icon="pi pi-times"
+              onClick={() => setShowEditDialog(false)}
+              className="w-full p-button-text p-button-secondary"
+            />
+          </div>
         </div>
       </Dialog>
     </motion.div>
