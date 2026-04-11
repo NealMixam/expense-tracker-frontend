@@ -17,7 +17,6 @@ SPA-приложение для учета личных финансов с ан
 | :---: | :---: |
 | <img src="./assets/laptop-mockup-home.png" width="600"> | <img src="./assets/phone-mockup-home.png" width="200"> 
 | Desktop View | Mobile View |
-| :---: | :---: |
 | <img src="./assets/laptop-mockup-analytics.png" width="600"> | <img src="./assets/phone-mockup-analytics.png" width="200">
 
 ---
