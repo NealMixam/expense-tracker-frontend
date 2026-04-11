@@ -20,6 +20,7 @@ interface MenuItem {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, isDark, toggleTheme }) => {
+  const appVersion = import.meta.env.APP_VERSION || '0.0.0';
   const [visible, setVisible] = useState<boolean>(false);
   const logout = useAuthStore((state) => state.logout);
   const location = useLocation();
@@ -44,7 +45,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, isDark, toggleTheme }
             rounded
             text
             severity="secondary"
-            onClick={() => toggleTheme()} 
+            onClick={() => toggleTheme()}
           />
           <Avatar icon="pi pi-user" shape="circle" className="bg-primary text-white" />
           <Button
@@ -118,8 +119,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, isDark, toggleTheme }
             </ul>
           </div>
 
-          <div className="mt-auto p-3 border-top-1 surface-border text-center surface-500">
-            <p className="text-sm">Expense Tracker v1.0</p>
+          <div className="mt-auto pt-3 border-top-1 surface-border">
+            <div className="flex align-items-center justify-content-center gap-2 p-3 text-secondary opacity-70">
+              <i className="pi pi-info-circle text-xs"></i>
+              <span className="text-xs font-medium">v{appVersion}</span>
+              <span className="text-xs">•</span>
+              <span className="text-xs">Production Build</span>
+            </div>
           </div>
         </div>
       </Sidebar>
