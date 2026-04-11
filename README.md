@@ -11,12 +11,11 @@ SPA-приложение для учета личных финансов с ан
 
 ---
 
-## Скриншоты интерфейса
-![Главный экран](./assets/laptop-mockup-home.png)
-![Главный экран на мобильном устройстве](./assets/phone-mockup-home.png)
+### Интерфейс приложения
 
-![Экран аналитики](./assets/laptop-mockup-analytics.png)
-![Экран аналитики на мобильном устройстве](./assets/phone-mockup-analytics.png)
+| Desktop View | Mobile View |
+| :---: | :---: |
+| <img src="./assets/laptop-mockup-home.png" width="600"> | <img src="./assets/phone-mockup-home.png" width="200"> | <img src="./assets/laptop-mockup-analytics.png" width="600"> | <img src="./assets/phone-mockup-analytics.png" width="200">
 
 ---
 
