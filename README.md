@@ -11,6 +11,15 @@ SPA-приложение для учета личных финансов с ан
 
 ---
 
+## Скриншоты интерфейса
+![Главный экран](./assets/laptop-mockup-home.png)
+![Главный экран на мобильном устройстве](./assets/phone-mockup-home.png)
+
+![Экран аналитики](./assets/laptop-mockup-analytics.png)
+![Экран аналитики на мобильном устройстве](./assets/phone-mockup-analytics.png)
+
+---
+
 ## 🛠 Стек технологий
 
 - React 18 (Vite)
